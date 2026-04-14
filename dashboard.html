@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InvoiceFlow — Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F4F2EE; color: #1a1a1a; min-height: 100vh; }
+    .sidebar { position: fixed; top: 0; left: 0; width: 230px; height: 100vh; background: #111; display: flex; flex-direction: column; z-index: 100; }
+    .sidebar-logo { padding: 22px 24px; font-size: 20px; font-weight: 700; color: #F5C842; border-bottom: 1px solid #222; }
+    .sidebar-menu { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .menu-label { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 1px; padding: 12px 12px 6px; font-weight: 600; }
+    .menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: #888; font-size: 14px; cursor: pointer; text-decoration: none; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+    .menu-item:hover { background: #1E1E1E; color: #fff; }
+    .menu-item.active { background: #F5C84220; color: #F5C842; }
+    .menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .menu-badge { margin-left: auto; background: #e74c3c; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+    .sidebar-user { padding: 16px; border-top: 1px solid #222; display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #F5C84230; border: 1px solid #F5C84250; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #F5C842; flex-shrink: 0; }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-plan { font-size: 11px; color: #555; }
+    .logout-btn { background: none; border: none; color: #555; font-size: 16px; cursor: pointer; padding: 4px; transition: color 0.2s; }
+    .logout-btn:hover { color: #e74c3c; }
+    .main { margin-left: 230px; min-height: 100vh; }
+    .topbar { background: #fff; border-bottom: 1px solid #E8E5DF; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-title { font-size: 18px; font-weight: 700; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .search-wrap { display: flex; align-items: center; gap: 8px; background: #F4F2EE; border: 1.5px solid #E0DDD6; border-radius: 8px; padding: 8px 14px; }
+    .search-wrap input { border: none; background: none; font-size: 13px; outline: none; width: 180px; font-family: inherit; color: #111; }
+    .search-wrap input::placeholder { color: #aaa; }
+    .new-btn { background: #F5C842; color: #000; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .new-btn:hover { opacity: 0.85; }
+    .content { padding: 28px 32px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: #fff; border-radius: 12px; padding: 20px 22px; border: 1px solid #E8E5DF; }
+    .stat-label { font-size: 12px; color: #999; margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 28px; font-weight: 800; color: #111; line-height: 1; }
+    .stat-sub { font-size: 12px; color: #aaa; margin-top: 6px; }
+    .stat-icon { font-size: 22px; margin-bottom: 10px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .section-title { font-size: 16px; font-weight: 700; }
+    .filter-tabs { display: flex; gap: 4px; }
+    .filter-tab { padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1.5px solid transparent; background: none; color: #888; font-family: inherit; transition: all 0.15s; }
+    .filter-tab:hover { background: #fff; color: #111; }
+    .filter-tab.active { background: #fff; color: #111; border-color: #E8E5DF; font-weight: 600; }
+    .table-wrap { background: #fff; border-radius: 12px; border: 1px solid #E8E5DF; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #F8F7F3; }
+    th { padding: 12px 20px; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; text-align: left; }
+    td { padding: 14px 20px; font-size: 14px; border-top: 1px solid #F0EDE6; vertical-align: middle; }
+    tr:hover td { background: #FAFAF8; }
+    .inv-num { font-weight: 700; color: #111; }
+    .inv-date { color: #888; font-size: 13px; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .badge.paid    { background: #EAFAF1; color: #1a7a40; } .badge.paid::before    { background: #2ecc71; }
+    .badge.pending { background: #FEF9E7; color: #9a6f00; } .badge.pending::before { background: #f1c40f; }
+    .badge.overdue { background: #FDECEA; color: #c0392b; } .badge.overdue::before { background: #e74c3c; }
+    .badge.draft   { background: #F4F2EE; color: #888;    } .badge.draft::before   { background: #bbb; }
+    .amount { font-weight: 700; color: #111; }
+    .actions { display: flex; gap: 6px; }
+    .act-btn { background: #F4F2EE; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; color: #555; transition: all 0.15s; font-family: inherit; }
+    .act-btn:hover { background: #111; color: #fff; }
+    .act-btn.delete:hover { background: #e74c3c; color: #fff; }
+    .act-btn:disabled { opacity: 0.35; cursor: default; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-title { font-size: 17px; font-weight: 600; color: #555; margin-bottom: 6px; }
+    .empty-sub { font-size: 14px; margin-bottom: 20px; }
+    .loading-state { text-align: center; padding: 48px; color: #aaa; font-size: 15px; }
+    @media (max-width: 900px) {
+      .sidebar { display: none; } .main { margin-left: 0; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .content { padding: 20px 16px; }
+      th:nth-child(3), td:nth-child(3) { display: none; }
+    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #fff; border-radius: 14px; padding: 28px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 17px; margin-bottom: 8px; }
+    .modal p { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.6; }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-btns button { flex: 1; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; border: none; }
+    .btn-cancel  { background: #F4F2EE; color: #555; }
+    .btn-confirm { background: #e74c3c; color: #fff; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #111; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999; }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">⚡ InvoiceFlow</div>
+  <div class="sidebar-menu">
+    <div class="menu-label">Main</div>
+    <a class="menu-item active" href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a class="menu-item" href="index.html"><span class="icon">➕</span> New Invoice</a>
+    <a class="menu-item" href="#"><span class="icon">📄</span> All Invoices <span class="menu-badge" id="overdue-badge" style="display:none">0</span></a>
+    <div class="menu-label">Account</div>
+    <a class="menu-item" href="#"><span class="icon">⚙️</span> Settings</a>
+    <a class="menu-item" href="#"><span class="icon">⭐</span> Upgrade to Pro</a>
+  </div>
+  <div class="sidebar-user">
+    <div class="avatar" id="user-avatar">?</div>
+    <div class="user-info">
+      <div class="user-name" id="user-name">Loading...</div>
+      <div class="user-plan">Free Plan</div>
+    </div>
+    <button class="logout-btn" id="logout-btn" title="Log out">↩</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Dashboard</div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <span>🔍</span>
+        <input type="text" placeholder="Search invoices..." id="search-input" />
+      </div>
+      <button class="new-btn" onclick="window.location.href='index.html'">+ New Invoice</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Invoiced</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">All time</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Paid</div><div class="stat-value" id="stat-paid">—</div><div class="stat-sub" id="stat-paid-count">—</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-label">Pending</div><div class="stat-value" id="stat-pending">—</div><div class="stat-sub" id="stat-pending-count">—</div></div>
+      <div class="stat-card"><div class="stat-icon">🚨</div><div class="stat-label">Overdue</div><div class="stat-value" id="stat-overdue">—</div><div class="stat-sub" id="stat-overdue-count">—</div></div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Your Invoices</div>
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="paid">Paid</button>
+        <button class="filter-tab" data-filter="pending">Pending</button>
+        <button class="filter-tab" data-filter="overdue">Overdue</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="loading-state" id="loading-state">⏳ Loading your invoices...</div>
+      <table id="invoices-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Invoice #</th>
+            <th>Client</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="invoice-tbody"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">No invoices yet</div>
+        <div class="empty-sub">Create your first invoice to get started.</div>
+        <button class="new-btn" onclick="window.location.href='index.html'">+ Create Invoice</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <h3>Delete Invoice?</h3>
+    <p>This will permanently delete <strong id="delete-inv-name"></strong>. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="cancel-delete">Cancel</button>
+      <button class="btn-confirm" id="confirm-delete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+  import { getAuth,
+           onAuthStateChanged,
+           signOut }          from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+  import { getFirestore,
+           collection, query,
+           where, orderBy,
+           getDocs, doc,
+           updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+  const app = initializeApp({
+    apiKey:            "AIzaSyCtS1sdqEEV1S5n6u4ArQ-ZaRS_qZBQ4qw",
+    authDomain:        "ls-invoice.firebaseapp.com",
+    projectId:         "ls-invoice",
+    storageBucket:     "ls-invoice.firebasestorage.app",
+    messagingSenderId: "960868224955",
+    appId:             "1:960868224955:web:8b6ed717eec02968407e9e"
+  });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const $ = id => document.getElementById(id);
+
+  let allInvoices  = [];
+  let currentFilter = 'all';
+  let deleteTarget  = null;
+  let currentUser   = null;
+
+  // ── AUTH GUARD ────────────────────────────────────────────
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    currentUser = user;
+
+    // Set user display info
+    const name   = user.displayName || user.email.split('@')[0];
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+    $('user-name').textContent   = name;
+    $('user-avatar').textContent = initials;
+
+    await loadInvoices();
+  });
+
+  // ── LOGOUT ────────────────────────────────────────────────
+  $('logout-btn').onclick = async () => {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  };
+
+  // ── LOAD INVOICES FROM FIRESTORE ─────────────────────────
+  async function loadInvoices() {
+    try {
+      const q = query(
+        collection(db, 'invoices'),
+        where('userId', '==', currentUser.uid),
+        orderBy('createdAt', 'desc')
+      );
+      const snap = await getDocs(q);
+      allInvoices = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e) {
+      // If index not ready yet, load without ordering
+      const q2   = query(collection(db, 'invoices'), where('userId', '==', currentUser.uid));
+      const snap = await getDocs(q2);
+      allInvoices = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    $('loading-state').style.display = 'none';
+    renderStats();
+    renderTable();
+  }
+
+  // ── STATS ─────────────────────────────────────────────────
+  function renderStats() {
+    const fmt = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const total   = allInvoices.reduce((s,i) => s + (i.amount||0), 0);
+    const paid    = allInvoices.filter(i => i.status === 'paid');
+    const pending = allInvoices.filter(i => i.status === 'pending');
+    const overdue = allInvoices.filter(i => i.status === 'overdue');
+
+    $('stat-total').textContent         = fmt(total);
+    $('stat-paid').textContent          = fmt(paid.reduce((s,i)=>s+(i.amount||0),0));
+    $('stat-pending').textContent       = fmt(pending.reduce((s,i)=>s+(i.amount||0),0));
+    $('stat-overdue').textContent       = fmt(overdue.reduce((s,i)=>s+(i.amount||0),0));
+    $('stat-paid-count').textContent    = paid.length    + ' invoice' + (paid.length    !== 1 ? 's' : '');
+    $('stat-pending-count').textContent = pending.length + ' invoice' + (pending.length !== 1 ? 's' : '');
+    $('stat-overdue-count').textContent = overdue.length + ' invoice' + (overdue.length !== 1 ? 's' : '');
+
+    const badge = $('overdue-badge');
+    badge.textContent    = overdue.length;
+    badge.style.display  = overdue.length > 0 ? 'inline-block' : 'none';
+  }
+
+  // ── TABLE ─────────────────────────────────────────────────
+  function renderTable() {
+    const search = $('search-input').value.toLowerCase();
+    const list   = allInvoices.filter(inv => {
+      const matchFilter = currentFilter === 'all' || inv.status === currentFilter;
+      const matchSearch = (inv.invoiceNumber||'').toLowerCase().includes(search) ||
+                          (inv.clientName||'').toLowerCase().includes(search);
+      return matchFilter && matchSearch;
+    });
+
+    const table = $('invoices-table');
+    const empty = $('empty-state');
+    const tbody = $('invoice-tbody');
+
+    if (list.length === 0) {
+      table.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    tbody.innerHTML = list.map(inv => `
+      <tr>
+        <td><span class="inv-num">${inv.invoiceNumber || '—'}</span></td>
+        <td>${inv.clientName || '—'}</td>
+        <td><span class="inv-date">${inv.invoiceDate || '—'}</span></td>
+        <td><span class="amount">${inv.currency || '$'}${(inv.amount||0).toFixed(2)}</span></td>
+        <td><span class="badge ${inv.status||'draft'}">${capitalize(inv.status||'draft')}</span></td>
+        <td>
+          <div class="actions">
+            <button class="act-btn" onclick="markPaid('${inv.id}')" ${inv.status==='paid'?'disabled':''}>✅ Paid</button>
+            <button class="act-btn delete" onclick="openDelete('${inv.id}', '${inv.invoiceNumber||inv.id}')">🗑 Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ── MARK PAID ─────────────────────────────────────────────
+  window.markPaid = async (id) => {
+    try {
+      await updateDoc(doc(db, 'invoices', id), { status: 'paid' });
+      const inv = allInvoices.find(i => i.id === id);
+      if (inv) inv.status = 'paid';
+      renderStats(); renderTable();
+      showToast('✅ Invoice marked as paid!');
+    } catch(e) { showToast('⚠️ Could not update invoice.'); }
+  };
+
+  // ── DELETE ────────────────────────────────────────────────
+  window.openDelete = (id, name) => {
+    deleteTarget = id;
+    $('delete-inv-name').textContent = name;
+    $('delete-modal').classList.add('show');
+  };
+  $('cancel-delete').onclick  = () => { $('delete-modal').classList.remove('show'); deleteTarget = null; };
+  $('confirm-delete').onclick = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteDoc(doc(db, 'invoices', deleteTarget));
+      allInvoices = allInvoices.filter(i => i.id !== deleteTarget);
+      renderStats(); renderTable();
+      showToast('🗑 Invoice deleted.');
+    } catch(e) { showToast('⚠️ Could not delete invoice.'); }
+    $('delete-modal').classList.remove('show');
+    deleteTarget = null;
+  };
+
+  // ── FILTER & SEARCH ───────────────────────────────────────
+  document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderTable();
+    };
+  });
+  $('search-input').oninput = () => renderTable();
+
+  // ── HELPERS ───────────────────────────────────────────────
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
