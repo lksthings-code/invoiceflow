@@ -14,7 +14,7 @@
   <div class="nav-links">
     <a href="dashboard.html">Dashboard</a>
     <span class="nav-user" id="nav-user" style="display:none"></span>
-    <button class="nav-btn" id="nav-auth-btn" onclick="window.location.href='login.html'">Log In</button>
+    <button class="nav-btn" id="nav-auth-btn">Log In</button>
   </div>
 </nav>
 
@@ -73,7 +73,7 @@
       <h2>📦 Services / Items</h2>
       <div class="items-header"><span>Description</span><span>Qty</span><span>Price</span><span></span></div>
       <div id="items-list"></div>
-      <button class="add-item-btn" onclick="addItem()">+ Add another item</button>
+      <button class="add-item-btn">+ Add another item</button>
       <div class="totals">
         <div class="total-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
         <div class="total-row"><span>Tax (<span id="tax-label">0</span>%)</span><span id="tax-amount">$0.00</span></div>
@@ -85,9 +85,9 @@
       <h2>📝 Notes (Optional)</h2>
       <div class="form-group"><textarea id="notes" placeholder="e.g. Payment due within 14 days." oninput="updatePreview()"></textarea></div>
       <div class="btn-group">
-        <button class="btn-primary" onclick="updatePreview()">🔄 Preview</button>
-        <button class="btn-download" onclick="downloadPDF()">⬇ Download PDF</button>
-        <button class="btn-save" id="save-btn" onclick="saveToFirebase()">☁️ Save</button>
+        <button class="btn-primary">🔄 Preview</button>
+        <button class="btn-download">⬇ Download PDF</button>
+        <button class="btn-save" id="save-btn">☁️ Save</button>
       </div>
       <p style="font-size:12px;color:#aaa;margin-top:10px;text-align:center" id="save-note">
         <a href="login.html" style="color:#F5C842">Log in</a> to save invoices to your dashboard.

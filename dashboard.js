@@ -235,3 +235,5 @@ document.querySelectorAll(".filter-tab").forEach((btn) => {
 });
 
 $("search-input").oninput = () => renderTable();
+$("top-new-btn").onclick = () => (window.location.href = "index.html");
+$("empty-new-btn").onclick = () => (window.location.href = "index.html");

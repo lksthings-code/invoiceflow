@@ -358,6 +358,9 @@ function setupDatesAndItems() {
 }
 
 function setupButtons() {
+  $("nav-auth-btn").addEventListener("click", () => {
+    if (!currentUser) window.location.href = "login.html";
+  });
   document.querySelector(".btn-primary").addEventListener("click", updatePreview);
   document.querySelector(".btn-download").addEventListener("click", downloadPDF);
   $("save-btn").addEventListener("click", saveToFirebase);
